@@ -20,10 +20,21 @@ workflow JointGenotyping {
     }
 
         scatter (bed in scatterList.scatters) {
-            call gatk.GenotypeGVCFs as genotypeGvcfs {
+            call gatk.CombineGVCFs as combineGVCFs {
                 input:
                     gvcf_files = gvcfFiles,
                     gvcf_file_indexes = gvcfIndexes,
+                    ref_fasta = ref_fasta,
+                    ref_dict = ref_dict,
+                    ref_fasta_index = ref_fasta_index,
+                    output_basename = vcf_basename,
+                    intervals = [bed]
+            }
+
+            call gatk.GenotypeGVCFs as genotypeGvcfs {
+                input:
+                    gvcf_files = combineGVCFs.output_gvcf,
+                    gvcf_file_indexes = combineGVCFs.output_gvcf_index,
                     intervals = [bed],
                     ref_fasta = ref_fasta,
                     ref_dict = ref_dict,
