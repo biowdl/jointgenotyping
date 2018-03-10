@@ -43,11 +43,18 @@ workflow JointGenotyping {
             }
         }
 
-        call picard.MergeVCFs as gatherGvcfs {
+        call picard.MergeVCFs as gatherVcfs {
             input:
                 input_vcfs = genotypeGvcfs.output_vcf,
                 input_vcfs_indexes = genotypeGvcfs.output_vcf_index,
                 output_vcf_path = outputDir + "/" + vcf_basename + ".vcf.gz"
+        }
+
+        call picard.MergeVCFs as gatherGvcfs {
+            input:
+                input_vcfs = combineGVCFs.output_gvcf,
+                input_vcfs_indexes = combineGVCFs.output_gvcf_index,
+                output_vcf_path = outputDir + "/" + vcf_basename + ".g.vcf.gz"
         }
 
     output {
