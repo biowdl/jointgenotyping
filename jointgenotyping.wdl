@@ -11,7 +11,7 @@ workflow JointGenotyping {
     File ref_fasta
     File ref_dict
     File ref_fasta_index
-    Boolean mergeGvcfFiles = false
+    Boolean mergeGvcfFiles
 
     call biopet.ScatterRegions as scatterList {
         input:
