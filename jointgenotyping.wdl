@@ -11,6 +11,7 @@ workflow JointGenotyping {
     File ref_fasta
     File ref_dict
     File ref_fasta_index
+    Boolean? mergeGvcfFiles = false
 
     call biopet.ScatterRegions as scatterList {
         input:
@@ -50,11 +51,13 @@ workflow JointGenotyping {
                 output_vcf_path = outputDir + "/" + vcf_basename + ".vcf.gz"
         }
 
-        call picard.MergeVCFs as gatherGvcfs {
-            input:
-                input_vcfs = combineGVCFs.output_gvcf,
-                input_vcfs_indexes = combineGVCFs.output_gvcf_index,
-                output_vcf_path = outputDir + "/" + vcf_basename + ".g.vcf.gz"
+        if (mergeGvcfFiles) {
+            call picard.MergeVCFs as gatherGvcfs {
+                input:
+                    input_vcfs = combineGVCFs.output_gvcf,
+                    input_vcfs_indexes = combineGVCFs.output_gvcf_index,
+                    output_vcf_path = outputDir + "/" + vcf_basename + ".g.vcf.gz"
+            }
         }
 
     output {
