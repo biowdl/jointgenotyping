@@ -61,7 +61,7 @@ workflow JointGenotyping {
         }
 
     output {
-        File vcf_file = gatherGvcfs.output_vcf
-        File vcf_file_index = gatherGvcfs.output_vcf_index
+        File vcf_file = gatherVcfs.output_vcf
+        File vcf_file_index = gatherVcfs.output_vcf_index
     }
 }
