@@ -12,6 +12,8 @@ workflow JointGenotyping {
     File refDict
     File refFastaIndex
     Boolean mergeGvcfFiles
+    File dbsnpVCF
+    File dbsnpVCFindex
 
     call biopet.ScatterRegions as scatterList {
         input:
@@ -40,7 +42,9 @@ workflow JointGenotyping {
                     refFasta = refFasta,
                     refDict = refDict,
                     refFastaIndex = refFastaIndex,
-                    outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz"
+                    outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
+                    dbsnpVCF = dbsnpVCF,
+                    dbsnpVCFindex = dbsnpVCFindex
             }
         }
 
