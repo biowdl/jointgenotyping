@@ -11,7 +11,7 @@ workflow JointGenotyping {
     File refFasta
     File refDict
     File refFastaIndex
-    Boolean mergeGvcfFiles
+    Boolean? mergeGvcfFiles
     File dbsnpVCF
     File dbsnpVCFindex
 
@@ -55,7 +55,7 @@ workflow JointGenotyping {
                 outputVCFpath = outputDir + "/" + vcfBasename + ".vcf.gz"
         }
 
-        if (mergeGvcfFiles) {
+        if (select_first([mergeGvcfFiles, true])) {
             call picard.MergeVCFs as gatherGvcfs {
                 input:
                     inputVCFs = combineGVCFs.outputGVCF,
