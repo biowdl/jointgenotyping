@@ -30,20 +30,21 @@ import nl.biopet.utils.ngs.vcf.getVcfIndexFile
 trait JointGenotyping extends Pipeline with Reference {
 
   def outputFile: File
-  def bamFile: Option[File]
+  def gvcfFiles: List[File]
   def dbsnpFile: Option[File]
 
   override def inputs: Map[String, Any] =
     super.inputs ++
       Map(
-        "GatkPreprocess.outputDir" -> outputDir.getAbsolutePath,
-        "GatkPreprocess.refFasta" -> referenceFasta.getAbsolutePath,
-        "GatkPreprocess.refFastaIndex" -> referenceFastaIndexFile.getAbsolutePath,
-        "GatkPreprocess.refDict" -> referenceFastaDictFile.getAbsolutePath
-      ) ++ 
-      bamFile.map("GatkPreprocess.bamFiles" -> _.getAbsolutePath)
-      dbsnpFile.map("GatkPreprocess.dbsnpVCF" -> _.getAbsolutePath) ++
-      dbsnpFile.map("GatkPreprocess.dbsnpVCFindex" -> getVcfIndexFile(_).getAbsolutePath)
+        "JointGenotyping.outputDir" -> outputDir.getAbsolutePath,
+        "JointGenotyping.refFasta" -> referenceFasta.getAbsolutePath,
+        "JointGenotyping.refFastaIndex" -> referenceFastaIndexFile.getAbsolutePath,
+        "JointGenotyping.refDict" -> referenceFastaDictFile.getAbsolutePath,
+        "JointGenotyping.gvcfFiles" -> gvcfFiles.map(_.getAbsolutePath)
+      ) ++
+      dbsnpFile.map("JointGenotyping.dbsnpVCF" -> _.getAbsolutePath) ++
+      dbsnpFile.map(
+        "JointGenotyping.dbsnpVCFindex" -> getVcfIndexFile(_).getAbsolutePath)
 
   def startFile: File = new File("./jointgenotyping.wdl")
 }

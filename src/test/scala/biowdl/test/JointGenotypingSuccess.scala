@@ -23,6 +23,4 @@ package biowdl.test
 
 import nl.biopet.utils.biowdl.PipelineSuccess
 
-trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {
-
-}
+trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {}

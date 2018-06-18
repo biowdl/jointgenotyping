@@ -26,14 +26,18 @@ import java.io.File
 import nl.biopet.utils.biowdl.references.TestReference
 import nl.biopet.utils.biowdl.fixtureFile
 
-trait JointGenotypingSingleEnd extends JointGenotypingSuccess with TestReference {
+trait JointGenotypingSingleEnd
+    extends JointGenotypingSuccess
+    with TestReference {
   def outputFile: File = new File(outputDir, "test.g.vcf.gz")
-  def bamFiles: List[File] = List(fixtureFile("samples", "wgs1", "wgs1.bam"))
-  def dbsnpFile: Option[File] = Some(fixtureFile("samples", "wgs2", "wgs2.vcf.gz"))
+  def gvcfFiles: List[File] = List(
+    fixtureFile("samples", "wgs1", "wgs1.g.vcf.gz"),
+    fixtureFile("samples", "wgs2", "wgs2.g.vcf.gz")
+  )
+  def dbsnpFile: Option[File] =
+    Some(fixtureFile("samples", "wgs2", "wgs2.vcf.gz"))
 }
 
 class JointGenotypingTest
     extends JointGenotypingSingleEnd
-    with JointGenotypingSuccess {
-
-}
+    with JointGenotypingSuccess {}
