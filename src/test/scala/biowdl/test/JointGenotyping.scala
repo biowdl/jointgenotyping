@@ -33,6 +33,12 @@ trait JointGenotyping extends Pipeline with Reference {
   def gvcfFiles: List[File]
   def dbsnpFile: Option[File]
 
+  def gvcfIndexes: List[File] = gvcfFiles.map{ file =>
+    getVcfIndexFile(file)
+  }
+
+  def vcfBasename: Option[String] = None
+
   override def inputs: Map[String, Any] =
     super.inputs ++
       Map(
@@ -40,8 +46,10 @@ trait JointGenotyping extends Pipeline with Reference {
         "JointGenotyping.refFasta" -> referenceFasta.getAbsolutePath,
         "JointGenotyping.refFastaIndex" -> referenceFastaIndexFile.getAbsolutePath,
         "JointGenotyping.refDict" -> referenceFastaDictFile.getAbsolutePath,
-        "JointGenotyping.gvcfFiles" -> gvcfFiles.map(_.getAbsolutePath)
+        "JointGenotyping.gvcfFiles" -> gvcfFiles.map(_.getAbsolutePath),
+        "JointGenotyping.gvcfIndexes" -> gvcfIndexes.map(_.getAbsolutePath)
       ) ++
+      vcfBasename.map("JointGenotyping.vcfBasename" -> _) ++
       dbsnpFile.map("JointGenotyping.dbsnpVCF" -> _.getAbsolutePath) ++
       dbsnpFile.map(
         "JointGenotyping.dbsnpVCFindex" -> getVcfIndexFile(_).getAbsolutePath)

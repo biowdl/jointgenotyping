@@ -7,7 +7,7 @@ workflow JointGenotyping {
     Array[File] gvcfFiles
     Array[File] gvcfIndexes
     String outputDir
-    String vcfBasename
+    String? vcfBasename = "multisample"
     File refFasta
     File refDict
     File refFastaIndex
