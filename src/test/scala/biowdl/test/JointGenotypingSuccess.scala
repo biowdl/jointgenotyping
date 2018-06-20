@@ -29,7 +29,7 @@ import nl.biopet.utils.ngs.vcf.getVcfIndexFile
 trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {
   val outputFile: File = vcfBasename match {
     case Some(_) => new File(outputDir, s"$vcfBasename.vcf.gz")
-    case _ => new File(outputDir, "multisample.vcf.gz")
+    case _       => new File(outputDir, "multisample.vcf.gz")
   }
   addMustHaveFile(outputFile)
   addMustHaveFile(getVcfIndexFile(outputFile))

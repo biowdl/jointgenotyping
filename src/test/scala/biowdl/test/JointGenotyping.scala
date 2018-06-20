@@ -32,7 +32,7 @@ trait JointGenotyping extends Pipeline with Reference {
   def gvcfFiles: List[File]
   def dbsnpFile: Option[File]
 
-  def gvcfIndexes: List[File] = gvcfFiles.map{ file =>
+  def gvcfIndexes: List[File] = gvcfFiles.map { file =>
     getVcfIndexFile(file)
   }
 
