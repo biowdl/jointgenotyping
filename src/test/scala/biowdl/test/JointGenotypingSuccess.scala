@@ -21,6 +21,16 @@
 
 package biowdl.test
 
-import nl.biopet.utils.biowdl.PipelineSuccess
+import java.io.File
 
-trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {}
+import nl.biopet.utils.biowdl.PipelineSuccess
+import nl.biopet.utils.ngs.vcf.getVcfIndexFile
+
+trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {
+  val outputFile: File = vcfBasename match {
+    case Some(_) => new File(outputDir, s"$vcfBasename.vcf.gz")
+    case _ => new File(outputDir, "multisample.vcf.gz")
+  }
+  addMustHaveFile(outputFile)
+  addMustHaveFile(getVcfIndexFile(outputFile))
+}

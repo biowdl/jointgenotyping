@@ -29,7 +29,6 @@ import nl.biopet.utils.ngs.vcf.getVcfIndexFile
 
 trait JointGenotyping extends Pipeline with Reference {
 
-  def outputFile: File
   def gvcfFiles: List[File]
   def dbsnpFile: Option[File]
 

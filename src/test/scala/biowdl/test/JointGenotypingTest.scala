@@ -29,7 +29,6 @@ import nl.biopet.utils.biowdl.fixtureFile
 trait JointGenotypingSingleEnd
     extends JointGenotypingSuccess
     with TestReference {
-  def outputFile: File = new File(outputDir, "test.g.vcf.gz")
   def gvcfFiles: List[File] = List(
     fixtureFile("samples", "wgs1", "wgs1.g.vcf.gz"),
     fixtureFile("samples", "wgs2", "wgs2.g.vcf.gz")
