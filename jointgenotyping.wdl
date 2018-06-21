@@ -7,11 +7,13 @@ workflow JointGenotyping {
     Array[File] gvcfFiles
     Array[File] gvcfIndexes
     String outputDir
-    String vcfBasename
+    String? vcfBasename = "multisample"
     File refFasta
     File refDict
     File refFastaIndex
-    Boolean mergeGvcfFiles
+    Boolean? mergeGvcfFiles
+    File dbsnpVCF
+    File dbsnpVCFindex
 
     call biopet.ScatterRegions as scatterList {
         input:
@@ -40,7 +42,9 @@ workflow JointGenotyping {
                     refFasta = refFasta,
                     refDict = refDict,
                     refFastaIndex = refFastaIndex,
-                    outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz"
+                    outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
+                    dbsnpVCF = dbsnpVCF,
+                    dbsnpVCFindex = dbsnpVCFindex
             }
         }
 
@@ -51,7 +55,7 @@ workflow JointGenotyping {
                 outputVCFpath = outputDir + "/" + vcfBasename + ".vcf.gz"
         }
 
-        if (mergeGvcfFiles) {
+        if (select_first([mergeGvcfFiles, true])) {
             call picard.MergeVCFs as gatherGvcfs {
                 input:
                     inputVCFs = combineGVCFs.outputGVCF,
