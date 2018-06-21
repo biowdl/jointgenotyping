@@ -39,4 +39,4 @@ trait JointGenotypingSingleEnd
 
 class JointGenotypingTest
     extends JointGenotypingSingleEnd
-    with JointGenotypingSuccess {}
+    with JointGenotypingSuccess
