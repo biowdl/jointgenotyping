@@ -1,5 +1,8 @@
 ---
 layout: default
+title: Home
+version: develop
+latest: true
 ---
 
 The workflow can be used to aggregate and genotype gVCF files for multiple
