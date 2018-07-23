@@ -24,13 +24,38 @@ package biowdl.test
 import java.io.File
 
 import nl.biopet.utils.biowdl.PipelineSuccess
-import nl.biopet.utils.ngs.vcf.getVcfIndexFile
+import nl.biopet.utils.ngs.vcf.{getVcfIndexFile, getSampleIds}
+
+import org.testng.annotations.Test
 
 trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {
   val outputFile: File = vcfBasename match {
     case Some(_) => new File(outputDir, s"$vcfBasename.vcf.gz")
     case _       => new File(outputDir, "multisample.vcf.gz")
   }
+  val outputGvcfFile: File = vcfBasename match {
+    case Some(_) => new File(outputDir, s"$vcfBasename.g.vcf.gz")
+    case _       => new File(outputDir, "multisample.g.vcf.gz")
+  }
+
   addMustHaveFile(outputFile)
   addMustHaveFile(getVcfIndexFile(outputFile))
+
+  if (mergeGvcfFiles) addMustHaveFile(outputGvcfFile)
+  else addMustNotHaveFile(outputGvcfFile)
+
+  @Test
+  def samplesTest(): Unit = {
+    samplesShouldMatch(outputFile)
+
+    if (mergeGvcfFiles) samplesShouldMatch(outputGvcfFile)
+  }
+
+  def samplesShouldMatch(fileToTest: File): Unit = {
+    val samplesIn: List[String] = gvcfFiles.flatMap(getSampleIds)
+    val samplesOut: List[String] = getSampleIds(fileToTest)
+
+    samplesIn.length shouldBe samplesOut.length
+    samplesOut should contain allElementsOf samplesIn
+  }
 }

@@ -40,3 +40,9 @@ trait JointGenotypingSingleEnd
 class JointGenotypingTest
     extends JointGenotypingSingleEnd
     with JointGenotypingSuccess
+
+class JointGenotypingGvcfTest
+    extends JointGenotypingSingleEnd
+    with JointGenotypingSuccess {
+  override def mergeGvcfFiles: Boolean = true
+}
