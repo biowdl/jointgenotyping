@@ -30,13 +30,12 @@ import nl.biopet.utils.ngs.vcf.getVcfIndexFile
 trait JointGenotyping extends Pipeline with Reference {
 
   def gvcfFiles: List[File]
-  def dbsnpFile: Option[File]
-
   def gvcfIndexes: List[File] = gvcfFiles.map { file =>
     getVcfIndexFile(file)
   }
-
+  def dbsnpFile: Option[File]
   def vcfBasename: Option[String] = None
+  def mergeGvcfFiles: Boolean = false
 
   override def inputs: Map[String, Any] =
     super.inputs ++
@@ -46,7 +45,8 @@ trait JointGenotyping extends Pipeline with Reference {
         "JointGenotyping.refFastaIndex" -> referenceFastaIndexFile.getAbsolutePath,
         "JointGenotyping.refDict" -> referenceFastaDictFile.getAbsolutePath,
         "JointGenotyping.gvcfFiles" -> gvcfFiles.map(_.getAbsolutePath),
-        "JointGenotyping.gvcfIndexes" -> gvcfIndexes.map(_.getAbsolutePath)
+        "JointGenotyping.gvcfIndexes" -> gvcfIndexes.map(_.getAbsolutePath),
+        "JointGenotyping.mergeGvcfFiles" -> mergeGvcfFiles
       ) ++
       vcfBasename.map("JointGenotyping.vcfBasename" -> _) ++
       dbsnpFile.map("JointGenotyping.dbsnpVCF" -> _.getAbsolutePath) ++
