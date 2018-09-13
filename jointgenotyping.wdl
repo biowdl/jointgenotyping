@@ -36,35 +36,40 @@ workflow JointGenotyping {
                 intervals = [bed]
         }
 
+        File gvcfChunks = combineGVCFs.outputVCF.file
+        File gvcfChunkdIndexes = combineGVCFs.outputVCF.index
+
         call gatk.GenotypeGVCFs as genotypeGvcfs {
             input:
-                gvcfFiles = combineGVCFs.outputGVCF,
-                gvcfFileIndexes = combineGVCFs.outputGVCFindex,
+                gvcfFiles = [combineGVCFs.outputVCF.file],
+                gvcfFilesIndex = [combineGVCFs.outputVCF.index],
                 intervals = [bed],
                 reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
                 dbsnpVCF = dbsnpVCF
         }
+
+        File chunks = genotypeGvcfs.outputVCF.file
+        File chunkdIndexes = genotypeGvcfs.outputVCF.index
     }
 
     call picard.MergeVCFs as gatherVcfs {
         input:
-            inputVCFs = genotypeGvcfs.outputVCF,
-            inputVCFsIndexes = genotypeGvcfs.outputVCFindex,
-            outputVCFpath = outputDir + "/" + vcfBasename + ".vcf.gz"
+            inputVCFs = chunks,
+            inputVCFsIndexes = chunkdIndexes,
+            outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz"
     }
 
     if (mergeGvcfFiles) {
         call picard.MergeVCFs as gatherGvcfs {
             input:
-                inputVCFs = combineGVCFs.outputGVCF,
-                inputVCFsIndexes = combineGVCFs.outputGVCFindex,
-                outputVCFpath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
+                inputVCFs = gvcfChunks,
+                inputVCFsIndexes = gvcfChunkdIndexes,
+                outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
         }
     }
 
     output {
-        File vcfFile = gatherVcfs.outputVCF
-        File vcfFileIndex = gatherVcfs.outputVCFindex
+        IndexedVcfFile vcfFile = gatherVcfs.outputVcf
     }
 }
