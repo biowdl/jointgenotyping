@@ -1,38 +1,37 @@
 version 1.0
 
 import "tasks/gatk.wdl" as gatk
-import "tasks/biopet.wdl" as biopet
+import "tasks/biopet/biopet.wdl" as biopet
 import "tasks/picard.wdl" as picard
+import "tasks/common.wdl" as common
 
 workflow JointGenotyping {
     input{
-        Array[File] gvcfFiles
-        Array[File] gvcfIndexes
+        Array[IndexedVcfFile] gvcfFiles
         String outputDir
         String vcfBasename = "multisample"
-        File refFasta
-        File refDict
-        File refFastaIndex
+        Reference reference
         Boolean mergeGvcfFiles = true
-        File dbsnpVCF
-        File dbsnpVCFindex
+        IndexedVcfFile dbsnpVCF
     }
 
     call biopet.ScatterRegions as scatterList {
         input:
-            refFasta = refFasta,
-            refDict = refDict,
+            reference = reference,
             outputDirPath = outputDir + "/scatters/"
+    }
+
+    scatter (gvcf in gvcfFiles) {
+        File files = gvcf.file
+        File indexes = gvcf.index
     }
 
     scatter (bed in scatterList.scatters) {
         call gatk.CombineGVCFs as combineGVCFs {
             input:
-                gvcfFiles = gvcfFiles,
-                gvcfFileIndexes = gvcfIndexes,
-                refFasta = refFasta,
-                refDict = refDict,
-                refFastaIndex = refFastaIndex,
+                gvcfFiles = files,
+                gvcfFilesIndex = indexes,
+                reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
                 intervals = [bed]
         }
@@ -42,12 +41,9 @@ workflow JointGenotyping {
                 gvcfFiles = combineGVCFs.outputGVCF,
                 gvcfFileIndexes = combineGVCFs.outputGVCFindex,
                 intervals = [bed],
-                refFasta = refFasta,
-                refDict = refDict,
-                refFastaIndex = refFastaIndex,
+                reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
-                dbsnpVCF = dbsnpVCF,
-                dbsnpVCFindex = dbsnpVCFindex
+                dbsnpVCF = dbsnpVCF
         }
     }
 
