@@ -35,23 +35,29 @@ trait JointGenotyping extends Pipeline with Reference {
   }
   def dbsnpFile: Option[File]
   def vcfBasename: Option[String] = None
-  def mergeGvcfFiles: Boolean = false
+  def mergeGvcfFiles: Option[Boolean] = None
 
   override def inputs: Map[String, Any] =
     super.inputs ++
       Map(
         "JointGenotyping.outputDir" -> outputDir.getAbsolutePath,
-        "JointGenotyping.refFasta" -> referenceFasta.getAbsolutePath,
-        "JointGenotyping.refFastaIndex" -> referenceFastaIndexFile.getAbsolutePath,
-        "JointGenotyping.refDict" -> referenceFastaDictFile.getAbsolutePath,
-        "JointGenotyping.gvcfFiles" -> gvcfFiles.map(_.getAbsolutePath),
-        "JointGenotyping.gvcfIndexes" -> gvcfIndexes.map(_.getAbsolutePath),
-        "JointGenotyping.mergeGvcfFiles" -> mergeGvcfFiles
+        "JointGenotyping.reference" -> Map(
+          "fasta" -> referenceFasta.getAbsolutePath,
+          "fai" -> referenceFastaIndexFile.getAbsolutePath,
+          "dict" -> referenceFastaDictFile.getAbsolutePath
+        ),
+        "JointGenotyping.gvcfFiles" -> gvcfFiles.zip(gvcfIndexes).map {
+          case (f, i) =>
+            Map("file" -> f.getAbsolutePath, "index" -> i.getAbsolutePath)
+        }
       ) ++
+      mergeGvcfFiles.map("JointGenotyping.mergeGvcfFiles" -> _) ++
       vcfBasename.map("JointGenotyping.vcfBasename" -> _) ++
-      dbsnpFile.map("JointGenotyping.dbsnpVCF" -> _.getAbsolutePath) ++
       dbsnpFile.map(
-        "JointGenotyping.dbsnpVCFindex" -> getVcfIndexFile(_).getAbsolutePath)
+        f =>
+          "JointGenotyping.dbsnpVCF" -> Map(
+            "file" -> f.getAbsolutePath,
+            "index" -> getVcfIndexFile(f).getAbsolutePath))
 
   def startFile: File = new File("./jointgenotyping.wdl")
 }

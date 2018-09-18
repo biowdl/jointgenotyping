@@ -41,14 +41,14 @@ trait JointGenotypingSuccess extends JointGenotyping with PipelineSuccess {
   addMustHaveFile(outputFile)
   addMustHaveFile(getVcfIndexFile(outputFile))
 
-  if (mergeGvcfFiles) addMustHaveFile(outputGvcfFile)
+  if (mergeGvcfFiles.getOrElse(true)) addMustHaveFile(outputGvcfFile)
   else addMustNotHaveFile(outputGvcfFile)
 
   @Test
   def samplesTest(): Unit = {
     samplesShouldMatch(outputFile)
 
-    if (mergeGvcfFiles) samplesShouldMatch(outputGvcfFile)
+    if (mergeGvcfFiles.getOrElse(true)) samplesShouldMatch(outputGvcfFile)
   }
 
   def samplesShouldMatch(fileToTest: File): Unit = {

@@ -44,5 +44,5 @@ class JointGenotypingTest
 class JointGenotypingGvcfTest
     extends JointGenotypingSingleEnd
     with JointGenotypingSuccess {
-  override def mergeGvcfFiles: Boolean = true
+  override def mergeGvcfFiles: Option[Boolean] = Some(true)
 }
