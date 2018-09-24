@@ -29,9 +29,8 @@ import nl.biopet.utils.biowdl.fixtureFile
 class JointGenotypingSingleSampleTest
     extends JointGenotypingSuccess
     with TestReference {
-  def gvcfFiles: List[File] = List(
-    fixtureFile("samples", "wgs1", "wgs1.g.vcf.gz"),
-  )
+  def gvcfFiles: List[File] =
+    List(fixtureFile("samples", "wgs1", "wgs1.g.vcf.gz"))
   def dbsnpFile: Option[File] =
     Some(fixtureFile("samples", "wgs2", "wgs2.vcf.gz"))
 }
