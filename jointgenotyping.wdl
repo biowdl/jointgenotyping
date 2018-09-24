@@ -36,6 +36,10 @@ workflow JointGenotyping {
                     outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
                     intervals = [bed]
             }
+
+            # Workaround optional Struct member access
+            File combinedGvcfFile = combineGVCFs.outputVCF.file
+            File combinedGvcfIndex = combineGVCFs.outputVCF.index
         }
 
         if (length(files) <= 1) {
@@ -53,10 +57,10 @@ workflow JointGenotyping {
         }
 
         File gvcfChunks = if length(files) > 1
-            then select_first([combineGVCFs.outputVCF.file])
+            then select_first([combinedGvcfFile])
             else select_first([createGVCFlink.link])
         File gvcfChunkdIndexes = if length(files) > 1
-            then select_first([combineGVCFs.outputVCF.index])
+            then select_first([combinedGvcfIndex])
             else select_first([createGVCFIndexlink.link])
 
         call gatk.GenotypeGVCFs as genotypeGvcfs {
