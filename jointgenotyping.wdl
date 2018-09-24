@@ -27,22 +27,42 @@ workflow JointGenotyping {
     }
 
     scatter (bed in scatterList.scatters) {
-        call gatk.CombineGVCFs as combineGVCFs {
-            input:
-                gvcfFiles = files,
-                gvcfFilesIndex = indexes,
-                reference = reference,
-                outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
-                intervals = [bed]
+        if (length(files) > 1) {
+            call gatk.CombineGVCFs as combineGVCFs {
+                input:
+                    gvcfFiles = files,
+                    gvcfFilesIndex = indexes,
+                    reference = reference,
+                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
+                    intervals = [bed]
+            }
         }
 
-        File gvcfChunks = combineGVCFs.outputVCF.file
-        File gvcfChunkdIndexes = combineGVCFs.outputVCF.index
+        if (length(files) <= 1) {
+            call common.CreateLink as createGVCFlink {
+                input:
+                    inputFile = files[0],
+                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz"
+            }
+
+            call common.CreateLink as createGVCFIndexlink {
+                input:
+                    inputFile = indexes[0],
+                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz.tbi"
+            }
+        }
+
+        File gvcfChunks = if length(files) > 1
+            then select_first([combineGVCFs.outputVCF.file])
+            else select_first([createGVCFlink.link])
+        File gvcfChunkdIndexes = if length(files) > 1
+            then select_first([combineGVCFs.outputVCF.index])
+            else select_first([createGVCFIndexlink.link])
 
         call gatk.GenotypeGVCFs as genotypeGvcfs {
             input:
-                gvcfFiles = [combineGVCFs.outputVCF.file],
-                gvcfFilesIndex = [combineGVCFs.outputVCF.index],
+                gvcfFiles = [gvcfChunks],
+                gvcfFilesIndex = [gvcfChunkdIndexes],
                 intervals = [bed],
                 reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
