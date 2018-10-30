@@ -35,6 +35,11 @@ class JointGenotypingSingleSampleTest
     Some(fixtureFile("samples", "wgs2", "wgs2.vcf.gz"))
 }
 
+class JointGenotypingSingleSampleGvcfTest
+    extends JointGenotypingSingleSampleTest {
+  override def mergeGvcfFiles: Option[Boolean] = Some(true)
+}
+
 class JointGenotypingTest extends JointGenotypingSingleSampleTest {
   override def gvcfFiles: List[File] = super.gvcfFiles ++ List(
     fixtureFile("samples", "wgs2", "wgs2.g.vcf.gz")

@@ -8,7 +8,7 @@ import "tasks/samtools.wdl" as samtools
 
 workflow JointGenotyping {
     input{
-        Array[IndexedVcfFile] gvcfFiles
+        Array[IndexedVcfFile]+ gvcfFiles
         String outputDir
         String vcfBasename = "multisample"
         Reference reference
@@ -53,26 +53,12 @@ workflow JointGenotyping {
             File combinedGvcfIndex = combineGVCFs.outputVCF.index
         }
 
-        if (length(files) <= 1) {
-            call common.CreateLink as createGVCFlink {
-                input:
-                    inputFile = files[0],
-                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz"
-            }
-
-            call common.CreateLink as createGVCFIndexlink {
-                input:
-                    inputFile = indexes[0],
-                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz.tbi"
-            }
-        }
-
         File gvcfChunks = if length(files) > 1
             then select_first([combinedGvcfFile])
-            else select_first([createGVCFlink.link])
+            else files[0]
         File gvcfChunkdIndexes = if length(files) > 1
             then select_first([combinedGvcfIndex])
-            else select_first([createGVCFIndexlink.link])
+            else indexes[0]
 
         call gatk.GenotypeGVCFs as genotypeGvcfs {
             input:
@@ -88,36 +74,39 @@ workflow JointGenotyping {
         File chunkdIndexes = genotypeGvcfs.outputVCF.index
     }
 
-    call picard.GatherVcfs as gatherVcfs {
+    call picard.MergeVCFs as gatherVcfs {
         input:
-            inputVcfs = chunks,
-            inputVcfIndexes = chunkdIndexes,
+            inputVCFs = chunks,
+            inputVCFsIndexes = chunkdIndexes,
             outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz"
     }
 
-    call samtools.Tabix as indexGatheredVcfs {
-        input:
-            inputFile = gatherVcfs.outputVcf
-    }
-
-    if (mergeGvcfFiles) {
-        call picard.GatherVcfs as gatherGvcfs {
+    # Merge GVCF files
+    if (mergeGvcfFiles && length(gvcfFiles) > 1) {
+        call picard.MergeVCFs as gatherGvcfs {
             input:
-                inputVcfs = gvcfChunks,
-                inputVcfIndexes = gvcfChunkdIndexes,
+                inputVCFs = gvcfChunks,
+                inputVCFsIndexes = gvcfChunkdIndexes,
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
         }
+    }
 
-        call samtools.Tabix as indexGatheredGvcfs {
+    # If only one is given link instead.
+    if (mergeGvcfFiles && length(gvcfFiles) == 1) {
+        call common.CreateLink as createGVCFlink {
             input:
-                inputFile = gatherGvcfs.outputVcf
+                inputFile = files[0],
+                outputPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
+        }
+
+        call common.CreateLink as createGVCFIndexlink {
+            input:
+                inputFile = indexes[0],
+                outputPath = outputDir + "/" + vcfBasename + ".g.vcf.gz.tbi"
         }
     }
 
     output {
-        IndexedVcfFile vcfFile = object {
-            file: gatherVcfs.outputVcf,
-            index: indexGatheredVcfs.index
-        }
+        IndexedVcfFile vcfFile = gatherVcfs.outputVcf
     }
 }

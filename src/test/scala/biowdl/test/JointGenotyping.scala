@@ -40,6 +40,7 @@ trait JointGenotyping extends Pipeline with Reference {
   override def inputs: Map[String, Any] =
     super.inputs ++
       Map(
+        "JointGenotyping.scatterSize" -> 5000, //make sure scattering happens
         "JointGenotyping.outputDir" -> outputDir.getAbsolutePath,
         "JointGenotyping.reference" -> Map(
           "fasta" -> referenceFasta.getAbsolutePath,
