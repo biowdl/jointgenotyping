@@ -1,9 +1,10 @@
 version 1.0
 
-import "tasks/gatk.wdl" as gatk
 import "tasks/biopet/biopet.wdl" as biopet
-import "tasks/picard.wdl" as picard
 import "tasks/common.wdl" as common
+import "tasks/gatk.wdl" as gatk
+import "tasks/picard.wdl" as picard
+import "tasks/samtools.wdl" as samtools
 
 workflow JointGenotyping {
     input{
@@ -13,12 +14,22 @@ workflow JointGenotyping {
         Reference reference
         Boolean mergeGvcfFiles = true
         IndexedVcfFile dbsnpVCF
+
+        Int scatterSize = 10000000
     }
 
     call biopet.ScatterRegions as scatterList {
         input:
             reference = reference,
-            outputDirPath = outputDir + "/scatters/"
+            outputDirPath = outputDir + "/scatters/",
+            scatterSize = scatterSize
+    }
+
+    # Glob messes with order of scatters (10 comes before 1), which causes problems at vcf gathering
+    call biopet.ReorderGlobbedScatters as orderedScatters {
+        input:
+            scatters = scatterList.scatters,
+            scatterDir = outputDir + "/scatters/"
     }
 
     scatter (gvcf in gvcfFiles) {
@@ -26,7 +37,7 @@ workflow JointGenotyping {
         File indexes = gvcf.index
     }
 
-    scatter (bed in scatterList.scatters) {
+    scatter (bed in orderedScatters.reorderedScatters) {
         if (length(files) > 1) {
             call gatk.CombineGVCFs as combineGVCFs {
                 input:
@@ -77,23 +88,36 @@ workflow JointGenotyping {
         File chunkdIndexes = genotypeGvcfs.outputVCF.index
     }
 
-    call picard.MergeVCFs as gatherVcfs {
+    call picard.GatherVcfs as gatherVcfs {
         input:
-            inputVCFs = chunks,
-            inputVCFsIndexes = chunkdIndexes,
+            inputVcfs = chunks,
+            inputVcfIndexes = chunkdIndexes,
             outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz"
     }
 
+    call samtools.Tabix as indexGatheredVcfs {
+        input:
+            inputFile = gatherVcfs.outputVcf
+    }
+
     if (mergeGvcfFiles) {
-        call picard.MergeVCFs as gatherGvcfs {
+        call picard.GatherVcfs as gatherGvcfs {
             input:
-                inputVCFs = gvcfChunks,
-                inputVCFsIndexes = gvcfChunkdIndexes,
+                inputVcfs = gvcfChunks,
+                inputVcfIndexes = gvcfChunkdIndexes,
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
+        }
+
+        call samtools.Tabix as indexGatheredGvcfs {
+            input:
+                inputFile = gatherGvcfs.outputVcf
         }
     }
 
     output {
-        IndexedVcfFile vcfFile = gatherVcfs.outputVcf
+        IndexedVcfFile vcfFile = object {
+            file: gatherVcfs.outputVcf,
+            index: indexGatheredVcfs.index
+        }
     }
 }
