@@ -15,6 +15,7 @@ workflow JointGenotyping {
         Boolean mergeGvcfFiles = true
         IndexedVcfFile dbsnpVCF
 
+        File? regions
         Int scatterSize = 10000000
     }
 
@@ -22,7 +23,8 @@ workflow JointGenotyping {
         input:
             reference = reference,
             outputDirPath = outputDir + "/scatters/",
-            scatterSize = scatterSize
+            scatterSize = scatterSize,
+            regions = regions
     }
 
     # Glob messes with order of scatters (10 comes before 1), which causes problems at vcf gathering
