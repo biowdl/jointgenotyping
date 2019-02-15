@@ -40,7 +40,6 @@
     - path: "multisample.g.vcf.gz"
       should_exist: false
 
-
 - name: two_sample_gvcf
   tags:
     - integration

@@ -7,7 +7,7 @@
   },
   "JointGenotyping.dbsnpVCF": {
     "file": "tests/data/wgs2.vcf.gz",
-    "index": "tests/data/wgs2.vcf.gz"
+    "index": "tests/data/wgs2.vcf.gz.tbi"
   },
   "JointGenotyping.gvcfFiles": [
     {"file": "tests/data/wgs1.g.vcf.gz",
