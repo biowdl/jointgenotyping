@@ -16,7 +16,9 @@ workflow JointGenotyping {
         IndexedVcfFile dbsnpVCF
 
         File? regions
-        Int scatterSize = 10000000
+        # scatterSize is on number of bases. The human genome has 3 000 000 000 bases.
+        # 500 000 000 gives approximately 6 scatters per sample.
+        Int scatterSize = 500000000
     }
 
     call biopet.ScatterRegions as scatterList {
