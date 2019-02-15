@@ -7,9 +7,9 @@
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
   files:
-    - path: "multisample.vcf.gz"
-    - path: "multisample.vcf.gz.tbi"
-    - path: "multisample.g.vcf.gz"
+    - path: "test-output/multisample.vcf.gz"
+    - path: "test-output/multisample.vcf.gz.tbi"
+    - path: "test-output/multisample.g.vcf.gz"
       should_exist: false
 
 - name: single_sample_gvcf
@@ -21,9 +21,9 @@
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
   files:
-    - path: "multisample.vcf.gz"
-    - path: "multisample.vcf.gz.tbi"
-    - path: "multisample.g.vcf.gz"
+    - path: "test-output/multisample.vcf.gz"
+    - path: "test-output/multisample.vcf.gz.tbi"
+    - path: "test-output/multisample.g.vcf.gz"
       should_exist: true
 
 - name: two_sample
@@ -35,9 +35,9 @@
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
   files:
-    - path: "multisample.vcf.gz"
-    - path: "multisample.vcf.gz.tbi"
-    - path: "multisample.g.vcf.gz"
+    - path: "test-output/multisample.vcf.gz"
+    - path: "test-output/multisample.vcf.gz.tbi"
+    - path: "test-output/multisample.g.vcf.gz"
       should_exist: false
 
 - name: two_sample_gvcf
@@ -49,7 +49,7 @@
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
   files:
-    - path: "multisample.vcf.gz"
-    - path: "multisample.vcf.gz.tbi"
-    - path: "multisample.g.vcf.gz"
+    - path: "test-output/multisample.vcf.gz"
+    - path: "test-output/multisample.vcf.gz.tbi"
+    - path: "test-output/multisample.g.vcf.gz"
       should_exist: true
