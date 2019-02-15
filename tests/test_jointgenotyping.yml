@@ -6,6 +6,11 @@
     TEST_JSON=tests/integration/single_sample.json ;
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
+  files:
+    - path: "multisample.vcf.gz"
+    - path: "multisample.vcf.gz.tbi"
+    - path: "multisample.g.vcf.gz"
+      should_exist: false
 
 - name: single_sample_gvcf
   tags:
@@ -15,6 +20,11 @@
     TEST_JSON=tests/integration/single_sample_gvcf.json ;
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
+  files:
+    - path: "multisample.vcf.gz"
+    - path: "multisample.vcf.gz.tbi"
+    - path: "multisample.g.vcf.gz"
+      should_exist: true
 
 - name: two_sample
   tags:
@@ -24,6 +34,12 @@
     TEST_JSON=tests/integration/two_sample.json ;
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
+  files:
+    - path: "multisample.vcf.gz"
+    - path: "multisample.vcf.gz.tbi"
+    - path: "multisample.g.vcf.gz"
+      should_exist: false
+
 
 - name: two_sample_gvcf
   tags:
@@ -33,4 +49,8 @@
     TEST_JSON=tests/integration/two_sample_gvcf.json ;
     sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
     cromwell run -i $TEST_JSON jointgenotyping.wdl'
-
+  files:
+    - path: "multisample.vcf.gz"
+    - path: "multisample.vcf.gz.tbi"
+    - path: "multisample.g.vcf.gz"
+      should_exist: true
