@@ -14,5 +14,6 @@
     "index": "tests/data/wgs1.g.vcf.gz.tbi"},
     {"file": "tests/data/wgs2.g.vcf.gz",
     "index": "tests/data/wgs2.g.vcf.gz.tbi"}
-  ]
+  ],
+  "JointGenotyping.mergeGvcfFiles": false
 }

@@ -12,5 +12,6 @@
   "JointGenotyping.gvcfFiles": [
     {"file": "tests/data/wgs1.g.vcf.gz",
     "index": "tests/data/wgs1.g.vcf.gz.tbi"}
-  ]
+  ],
+  "JointGenotyping.mergeGvcfFiles": false
 }
