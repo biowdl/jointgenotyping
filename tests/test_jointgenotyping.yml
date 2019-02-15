@@ -1,0 +1,36 @@
+- name: single_sample
+  tags:
+    - integration
+  command: >-
+    bash -c '
+    TEST_JSON=tests/integration/single_sample.json ;
+    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
+    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+
+- name: single_sample_gvcf
+  tags:
+    - integration
+  command: >-
+    bash -c '
+    TEST_JSON=tests/integration/single_sample_gvcf.json ;
+    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
+    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+
+- name: two_sample
+  tags:
+    - integration
+  command: >-
+    bash -c '
+    TEST_JSON=tests/integration/two_sample.json ;
+    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
+    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+
+- name: two_sample_gvcf
+  tags:
+    - integration
+  command: >-
+    bash -c '
+    TEST_JSON=tests/integration/two_sample_gvcf.json ;
+    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
+    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+
