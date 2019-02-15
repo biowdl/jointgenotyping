@@ -16,7 +16,9 @@ workflow JointGenotyping {
         IndexedVcfFile dbsnpVCF
 
         File? regions
-        Int scatterSize = 10000000
+        # scatterSize is on number of bases. The human genome has 3 000 000 000 bases.
+        # 400 000 000 gives approximately 8 scatters per sample.
+        Int scatterSize = 400000000
     }
 
     call biopet.ScatterRegions as scatterList {
@@ -40,32 +42,24 @@ workflow JointGenotyping {
     }
 
     scatter (bed in orderedScatters.reorderedScatters) {
-        if (length(files) > 1) {
-            call gatk.CombineGVCFs as combineGVCFs {
-                input:
-                    gvcfFiles = files,
-                    gvcfFilesIndex = indexes,
-                    reference = reference,
-                    outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
-                    intervals = [bed]
-            }
 
-            # Workaround optional Struct member access
-            File combinedGvcfFile = combineGVCFs.outputVCF.file
-            File combinedGvcfIndex = combineGVCFs.outputVCF.index
+        call gatk.CombineGVCFs as combineGVCFs {
+            input:
+                gvcfFiles = files,
+                gvcfFilesIndex = indexes,
+                reference = reference,
+                outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
+                intervals = [bed]
         }
 
-        File gvcfChunks = if length(files) > 1
-            then select_first([combinedGvcfFile])
-            else files[0]
-        File gvcfChunkdIndexes = if length(files) > 1
-            then select_first([combinedGvcfIndex])
-            else indexes[0]
+
+        File combinedGvcfFile = combineGVCFs.outputVCF.file
+        File combinedGvcfIndex = combineGVCFs.outputVCF.index
 
         call gatk.GenotypeGVCFs as genotypeGvcfs {
             input:
-                gvcfFiles = [gvcfChunks],
-                gvcfFilesIndex = [gvcfChunkdIndexes],
+                gvcfFiles = [combinedGvcfFile],
+                gvcfFilesIndex = [combinedGvcfIndex],
                 intervals = [bed],
                 reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
@@ -83,30 +77,15 @@ workflow JointGenotyping {
             outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz"
     }
 
-    # Merge GVCF files
-    if (mergeGvcfFiles && length(gvcfFiles) > 1) {
+if (mergeGvcfFiles) {
         call picard.MergeVCFs as gatherGvcfs {
             input:
-                inputVCFs = gvcfChunks,
-                inputVCFsIndexes = gvcfChunkdIndexes,
+                inputVCFs = combinedGvcfFile,
+                inputVCFsIndexes = combinedGvcfIndex,
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
         }
     }
 
-    # If only one is given link instead.
-    if (mergeGvcfFiles && length(gvcfFiles) == 1) {
-        call common.CreateLink as createGVCFlink {
-            input:
-                inputFile = files[0],
-                outputPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
-        }
-
-        call common.CreateLink as createGVCFIndexlink {
-            input:
-                inputFile = indexes[0],
-                outputPath = outputDir + "/" + vcfBasename + ".g.vcf.gz.tbi"
-        }
-    }
 
     output {
         IndexedVcfFile vcfFile = gatherVcfs.outputVcf
