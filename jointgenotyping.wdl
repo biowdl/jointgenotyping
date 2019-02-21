@@ -85,7 +85,7 @@ workflow JointGenotyping {
             dockerTag = dockerTags["picard"]
     }
 
-  if (mergeGvcfFiles) {
+    if (mergeGvcfFiles) {
         call picard.MergeVCFs as gatherGvcfs {
             input:
                 inputVCFs = combinedGvcfFile,
