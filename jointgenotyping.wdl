@@ -24,7 +24,6 @@ workflow JointGenotyping {
     call biopet.ScatterRegions as scatterList {
         input:
             reference = reference,
-            outputDirPath = outputDir + "/scatters/",
             scatterSize = scatterSize,
             regions = regions
     }
@@ -32,8 +31,7 @@ workflow JointGenotyping {
     # Glob messes with order of scatters (10 comes before 1), which causes problems at vcf gathering
     call biopet.ReorderGlobbedScatters as orderedScatters {
         input:
-            scatters = scatterList.scatters,
-            scatterDir = outputDir + "/scatters/"
+            scatters = scatterList.scatters
     }
 
     scatter (gvcf in gvcfFiles) {
