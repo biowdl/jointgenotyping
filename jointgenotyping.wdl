@@ -19,21 +19,26 @@ workflow JointGenotyping {
         # scatterSize is on number of bases. The human genome has 3 000 000 000 bases.
         # 400 000 000 gives approximately 8 scatters per sample.
         Int scatterSize = 400000000
+
+        Map[String, String] dockerTags = {
+          "picard":"2.18.26--0",
+          "gatk4":"4.1.0.0--0",
+          "biopet-scatterregions": "0.2--0",
+        }
     }
 
     call biopet.ScatterRegions as scatterList {
         input:
             reference = reference,
-            outputDirPath = outputDir + "/scatters/",
             scatterSize = scatterSize,
-            regions = regions
+            regions = regions,
+            dockerTag = dockerTags["biopet-scatterregions"]
     }
 
     # Glob messes with order of scatters (10 comes before 1), which causes problems at vcf gathering
     call biopet.ReorderGlobbedScatters as orderedScatters {
         input:
-            scatters = scatterList.scatters,
-            scatterDir = outputDir + "/scatters/"
+            scatters = scatterList.scatters
     }
 
     scatter (gvcf in gvcfFiles) {
@@ -49,7 +54,8 @@ workflow JointGenotyping {
                 gvcfFilesIndex = indexes,
                 reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
-                intervals = [bed]
+                intervals = [bed],
+                dockerTag = dockerTags["gatk4"]
         }
 
 
@@ -63,7 +69,8 @@ workflow JointGenotyping {
                 intervals = [bed],
                 reference = reference,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
-                dbsnpVCF = dbsnpVCF
+                dbsnpVCF = dbsnpVCF,
+                dockerTag = dockerTags["gatk4"]
         }
 
         File chunks = genotypeGvcfs.outputVCF.file
@@ -74,15 +81,17 @@ workflow JointGenotyping {
         input:
             inputVCFs = chunks,
             inputVCFsIndexes = chunkdIndexes,
-            outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz"
+            outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz",
+            dockerTag = dockerTags["picard"]
     }
 
-if (mergeGvcfFiles) {
+    if (mergeGvcfFiles) {
         call picard.MergeVCFs as gatherGvcfs {
             input:
                 inputVCFs = combinedGvcfFile,
                 inputVCFsIndexes = combinedGvcfIndex,
-                outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz"
+                outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz",
+                dockerTag = dockerTags["picard"]
         }
     }
 
