@@ -52,35 +52,34 @@ workflow JointGenotyping {
             input:
                 gvcfFiles = files,
                 gvcfFilesIndex = indexes,
-                reference = reference,
+                referenceFasta = reference.fasta,
+                referenceFastaFai = reference.fai,
+                referenceFastaDict = reference.dict,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
                 intervals = [bed],
                 dockerTag = dockerTags["gatk4"]
         }
 
-
-        File combinedGvcfFile = combineGVCFs.outputVCF.file
-        File combinedGvcfIndex = combineGVCFs.outputVCF.index
-
         call gatk.GenotypeGVCFs as genotypeGvcfs {
             input:
-                gvcfFiles = [combinedGvcfFile],
-                gvcfFilesIndex = [combinedGvcfIndex],
+                gvcfFiles = [combineGVCFs.outputVcf],
+                gvcfFilesIndex = [combineGVCFs.outputVcfIndex],
                 intervals = [bed],
-                reference = reference,
+                referenceFasta = reference.fasta,
+                referenceFastaDict = reference.dict,
+                referenceFastaFai = reference.fai,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
-                dbsnpVCF = dbsnpVCF,
+                dbsnpVCF = dbsnpVCF.file,
+                dbsnpVCFIndex = dbsnpVCF.index,
                 dockerTag = dockerTags["gatk4"]
         }
 
-        File chunks = genotypeGvcfs.outputVCF.file
-        File chunkdIndexes = genotypeGvcfs.outputVCF.index
     }
 
     call picard.MergeVCFs as gatherVcfs {
         input:
-            inputVCFs = chunks,
-            inputVCFsIndexes = chunkdIndexes,
+            inputVCFs = genotypeGvcfs.outputVCF,
+            inputVCFsIndexes = genotypeGvcfs.outputVCFIndex,
             outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz",
             dockerTag = dockerTags["picard"]
     }
@@ -88,15 +87,17 @@ workflow JointGenotyping {
     if (mergeGvcfFiles) {
         call picard.MergeVCFs as gatherGvcfs {
             input:
-                inputVCFs = combinedGvcfFile,
-                inputVCFsIndexes = combinedGvcfIndex,
+                inputVCFs = combineGVCFs.outputVcf,
+                inputVCFsIndexes = combineGVCFs.outputVcfIndex,
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz",
                 dockerTag = dockerTags["picard"]
         }
     }
 
-
     output {
-        IndexedVcfFile vcfFile = gatherVcfs.outputVcf
+        IndexedVcfFile vcfFile = object {
+            file: gatherVcfs.outputVcf,
+            index: gatherVcfs.outputVcfIndex
+        }
     }
 }
