@@ -9,7 +9,7 @@ import "tasks/samtools.wdl" as samtools
 workflow JointGenotyping {
     input{
         Array[IndexedVcfFile]+ gvcfFiles
-        String outputDir
+        String outputDir = "."
         String vcfBasename = "multisample"
         Reference reference
         Boolean mergeGvcfFiles = true
@@ -93,6 +93,10 @@ workflow JointGenotyping {
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz",
                 dockerImage = dockerImages["picard"]
         }
+        IndexedVcfFile gvcf = object {
+            file: gatherGvcfs.outputVcf,
+            index: gatherGvcfs.outputVcfIndex
+        }
     }
 
     output {
@@ -100,5 +104,6 @@ workflow JointGenotyping {
             file: gatherVcfs.outputVcf,
             index: gatherVcfs.outputVcfIndex
         }
+        IndexedVcfFile? gvcfFile = gvcf
     }
 }

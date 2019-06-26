@@ -2,10 +2,8 @@
   tags:
     - integration
   command: >-
-    bash -c '
-    TEST_JSON=tests/integration/single_sample.json ;
-    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
-    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+    cromwell run -o tests/cromwell_options.json
+    -i tests/integration/single_sample.json jointgenotyping.wdl
   files:
     - path: "test-output/multisample.vcf.gz"
     - path: "test-output/multisample.vcf.gz.tbi"
@@ -16,10 +14,8 @@
   tags:
     - integration
   command: >-
-    bash -c '
-    TEST_JSON=tests/integration/single_sample_gvcf.json ;
-    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
-    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+    cromwell run -o tests/cromwell_options.json
+    -i tests/integration/single_sample_gvcf.json jointgenotyping.wdl
   files:
     - path: "test-output/multisample.vcf.gz"
     - path: "test-output/multisample.vcf.gz.tbi"
@@ -30,10 +26,8 @@
   tags:
     - integration
   command: >-
-    bash -c '
-    TEST_JSON=tests/integration/two_sample.json ;
-    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
-    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+    cromwell run -o tests/cromwell_options.json
+    -i tests/integration/two_sample.json jointgenotyping.wdl
   files:
     - path: "test-output/multisample.vcf.gz"
     - path: "test-output/multisample.vcf.gz.tbi"
@@ -44,10 +38,8 @@
   tags:
     - integration
   command: >-
-    bash -c '
-    TEST_JSON=tests/integration/two_sample_gvcf.json ;
-    sed -i "2i\"JointGenotyping.outputDir\":\"$PWD/test-output\"," $TEST_JSON ;
-    cromwell run -i $TEST_JSON jointgenotyping.wdl'
+    cromwell run -o tests/cromwell_options.json
+    -i tests/integration/two_sample_gvcf.json jointgenotyping.wdl
   files:
     - path: "test-output/multisample.vcf.gz"
     - path: "test-output/multisample.vcf.gz.tbi"
