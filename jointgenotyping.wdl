@@ -9,7 +9,7 @@ import "tasks/samtools.wdl" as samtools
 workflow JointGenotyping {
     input{
         Array[IndexedVcfFile]+ gvcfFiles
-        String outputDir
+        String outputDir = "."
         String vcfBasename = "multisample"
         Reference reference
         Boolean mergeGvcfFiles = true
@@ -20,19 +20,20 @@ workflow JointGenotyping {
         # 1 billion gives approximately 3 scatters per sample.
         Int scatterSize = 1000000000
 
-        Map[String, String] dockerTags = {
-          "picard":"2.18.26--0",
-          "gatk4":"4.1.0.0--0",
-          "biopet-scatterregions": "0.2--0",
+        Map[String, String] dockerImages = {
+          "picard":"quay.io/biocontainers/picard:2.18.26--0",
+          "gatk4":"quay.io/biocontainers/gatk4:4.1.0.0--0",
+          "biopet-scatterregions": "quay.io/biocontainers/biopet-scatterregions:0.2--0",
         }
     }
 
     call biopet.ScatterRegions as scatterList {
         input:
-            reference = reference,
+            referenceFasta = reference.fasta,
+            referenceFastaDict = reference.dict,
             scatterSize = scatterSize,
             regions = regions,
-            dockerTag = dockerTags["biopet-scatterregions"]
+            dockerImage = dockerImages["biopet-scatterregions"]
     }
 
     # Glob messes with order of scatters (10 comes before 1), which causes problems at vcf gathering
@@ -57,7 +58,7 @@ workflow JointGenotyping {
                 referenceFastaDict = reference.dict,
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".g.vcf.gz",
                 intervals = [bed],
-                dockerTag = dockerTags["gatk4"]
+                dockerImage = dockerImages["gatk4"]
         }
 
         call gatk.GenotypeGVCFs as genotypeGvcfs {
@@ -71,7 +72,7 @@ workflow JointGenotyping {
                 outputPath = outputDir + "/scatters/" + basename(bed) + ".genotyped.vcf.gz",
                 dbsnpVCF = dbsnpVCF.file,
                 dbsnpVCFIndex = dbsnpVCF.index,
-                dockerTag = dockerTags["gatk4"]
+                dockerImage = dockerImages["gatk4"]
         }
 
     }
@@ -81,7 +82,7 @@ workflow JointGenotyping {
             inputVCFs = genotypeGvcfs.outputVCF,
             inputVCFsIndexes = genotypeGvcfs.outputVCFIndex,
             outputVcfPath = outputDir + "/" + vcfBasename + ".vcf.gz",
-            dockerTag = dockerTags["picard"]
+            dockerImage = dockerImages["picard"]
     }
 
     if (mergeGvcfFiles) {
@@ -90,7 +91,11 @@ workflow JointGenotyping {
                 inputVCFs = combineGVCFs.outputVcf,
                 inputVCFsIndexes = combineGVCFs.outputVcfIndex,
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz",
-                dockerTag = dockerTags["picard"]
+                dockerImage = dockerImages["picard"]
+        }
+        IndexedVcfFile gvcf = object {
+            file: gatherGvcfs.outputVcf,
+            index: gatherGvcfs.outputVcfIndex
         }
     }
 
@@ -99,5 +104,6 @@ workflow JointGenotyping {
             file: gatherVcfs.outputVcf,
             index: gatherVcfs.outputVcfIndex
         }
+        IndexedVcfFile? gvcfFile = gvcf
     }
 }
