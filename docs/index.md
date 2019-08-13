@@ -49,6 +49,25 @@ Some additional inputs that may be of interest are:
 }
 ```
 
+An output directory can be set using an `options.json` file. See [the
+cromwell documentation](
+https://cromwell.readthedocs.io/en/stable/wf_options/Overview/) for more
+information.
+
+Example `options.json` file:
+```JSON
+{
+"final_workflow_outputs_dir": "my-analysis-output",
+"use_relative_output_paths": true,
+"default_runtime_attributes": {
+  "docker_user": "$EUID"
+  }
+}
+```
+Alternatively an output directory can be set with `GatkPreprocess.outputDir`.
+`GatkPreprocess.outputDir` must be mounted in the docker container. Cromwell will
+need a custom configuration to allow this.
+
 #### Example
 ```json
 {
@@ -75,9 +94,17 @@ Some additional inputs that may be of interest are:
 ```
 
 ### Dependency requirements and tool versions
-Included in the repository is an `environment.yml` file. This file includes
-all the tool version on which the workflow was tested. You can use conda and
-this file to create an environment with all the correct tools.
+Biowdl pipelines use docker images to ensure  reproducibility. This
+means that biowdl pipelines will run on any system that has docker
+installed. Alternatively they can be run with singularity.
+
+For more advanced configuration of docker or singularity please check
+the [cromwell documentation on containers](
+https://cromwell.readthedocs.io/en/stable/tutorials/Containers/).
+
+Images from [biocontainers](https://biocontainers.pro) are preferred for
+biowdl pipelines. The list of default images for this pipeline can be
+found in the default for the `dockerImages` input.
 
 ### Output
 A multisample VCF file. If `mergeGvcfFiles` is set to `true`, also a 
