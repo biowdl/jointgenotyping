@@ -93,7 +93,7 @@ workflow JointGenotyping {
                 outputVcfPath = outputDir + "/" + vcfBasename + ".g.vcf.gz",
                 dockerImage = dockerImages["picard"]
         }
-        IndexedVcfFile gvcf = object {
+        IndexedVcfFile mergedGVCF = object {
             file: gatherGvcfs.outputVcf,
             index: gatherGvcfs.outputVcfIndex
         }
@@ -104,6 +104,6 @@ workflow JointGenotyping {
             file: gatherVcfs.outputVcf,
             index: gatherVcfs.outputVcfIndex
         }
-        IndexedVcfFile? gvcfFile = gvcf
+        IndexedVcfFile? gvcfFile = mergedGVCF
     }
 }
