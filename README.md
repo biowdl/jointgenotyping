@@ -1,5 +1,8 @@
 # wdl-jointgenotyping
 
+THIS WORKFLOW IS DEPRECATED. Please use the [gatk-variantcalling](
+https://github.com/biowdl/gatk-variantcalling) workflow instead.
+
 This repository contains the [Biowdl](https://github.com/biowdl) 
 workflow usable for generating a multisample vcf files.
 
